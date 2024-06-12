@@ -91,7 +91,7 @@ export const Logout = asyncErrrorHandler(async (req, res, next) => {
 });
 
 // Get User Profile
-export const getUserProfile = asyncErrrorHandler(async (req, res, next) => {
+export const  getUserProfile = asyncErrrorHandler(async (req, res, next) => {
   try {
     const { email } = req.body;
 

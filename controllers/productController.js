@@ -20,8 +20,9 @@ export const getAllProducts = asyncErrrorHandler(async (req, res, next) => {
 //get filtered product
 export const filteredProducts = asyncErrrorHandler(async (req, res, next) => {
   try {
-    const { name, category, minPrice, maxPrice, tags } = req.query;
+    const { name, category, subcategory, gender, brand, sizechart, minPrice, maxPrice, tags } = req.query;
 
+    // Construct tag filter
     let tagFilter = { $exists: true };
     if (tags) {
       const tagArray = tags.split(",").map((tag) => tag.trim());
@@ -30,39 +31,26 @@ export const filteredProducts = asyncErrrorHandler(async (req, res, next) => {
       }
     }
 
+    // Log the constructed tag filter
     console.log("Tag Filter:", tagFilter);
+    const priceFilter = {};
+    if (minPrice) priceFilter.$gte = Number(minPrice);
+    if (maxPrice) priceFilter.$lte = Number(maxPrice);
 
     const pipeline = [
       // Search
-      { $match: { name: { $regex: name || "", $options: "i" } } },
-
-      // Filters
       {
         $match: {
-          category: category
-            ? { $regex: new RegExp(`^${category}$`, "i") }
-            : { $exists: true },
-          subcategory: subcategory
-            ? { $regex: new RegExp(`^${subcategory}$`, "i") }
-            : { $exists: true },
-          gender: gender
-            ? { $regex: new RegExp(`^${gender}$`, "i") }
-            : { $exists: true },
-          brand: brand
-            ? { $regex: new RegExp(`^${brand}$`, "i") }
-            : { $exists: true },
-          size: sizechart
-            ? {
-                $in: sizechart.split(",").map((s) => new RegExp(s.trim(), "i")),
-              }
-            : { $exists: true },
-          price: {
-            $gte: minPrice ? Number(minPrice) : 0,
-            $lte: maxPrice ? Number(maxPrice) : Infinity,
-          },
-          tags: tags
-            ? { $in: tags.split(",").map((tag) => new RegExp(tag.trim(), "i")) }
-            : { $exists: true },
+          ...(name && { name: { $regex: new RegExp(name, 'i') } }),
+          ...(category && { category: new RegExp(`^${category}$`, 'i') }),
+          ...(subcategory && { subcategory: new RegExp(`^${subcategory}$`, 'i') }),
+          ...(gender && { gender: new RegExp(`^${gender}$`, 'i') }),
+          ...(brand && { brand: new RegExp(`^${brand}$`, 'i') }),
+          ...(sizechart && {
+            size: { $in: sizechart.split(',').map((s) => new RegExp(s.trim(), 'i')) },
+          }),
+          ...(Object.keys(priceFilter).length > 0 && { price: priceFilter }),
+          ...(tags && { tags: { $in: tags.split(',').map((tag) => new RegExp(tag.trim(), 'i')) } }),
         },
       },
 
@@ -83,9 +71,7 @@ export const filteredProducts = asyncErrrorHandler(async (req, res, next) => {
 
     const products = await Product.aggregate(pipeline);
     console.log(products);
-    res
-      .status(200)
-      .json({ success: true, count: products.length, data: products });
+    res.status(200).json({ success: true, count: products.length, data: products });
   } catch (error) {
     console.log("Error in Filtered Products", error.message);
     return next(new ErrorHandler(error.message, 500));
@@ -111,7 +97,7 @@ export const addToFavorites = asyncErrrorHandler(async (req, res, next) => {
     const { id } = req.params;
     const { productId } = req.body;
 
-    const user = await User.findById({ id });
+    const user = await User.findById( id );
     if (!user) return next(new ErrorHandler("User not found", 404));
 
     const productIndex = user.favourites.findIndex((favourite) =>

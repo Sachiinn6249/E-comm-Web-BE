@@ -2,6 +2,7 @@ import express from "express";
 import authAdmin from "../middlewares/authAdmin.js";
 import {
   adminLogin,
+  adminLogout,
   getAdminProfile,
   getAllUsers,
   getSingleUser,
@@ -11,6 +12,7 @@ import {
 
 const adminRoute = express.Router();
 adminRoute.post("/login", adminLogin);
+adminRoute.post("/logout", adminLogout);
 adminRoute.get("/get-profile", authAdmin, getAdminProfile);
 adminRoute.get("/user/:id", authAdmin, getSingleUser);
 adminRoute.get("/users", authAdmin, getAllUsers);

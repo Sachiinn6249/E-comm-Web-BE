@@ -26,7 +26,23 @@ export const adminLogin = asyncErrrorHandler(async (req, res, next) => {
     return next(new ErrorHandler(error.message, 500));
   }
 });
-
+//admin Logout
+export const adminLogout = asyncErrrorHandler(async (req, res, next) => {
+  try {
+   
+    await res.cookie("token", "", {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+      sameSite: "none",
+    });
+    res
+      .status(200)
+      .json({ success: true, message: "Logged Out Successfully!" });
+  } catch (error) {
+    console.log("Error in Logout");
+    return next(new ErrorHandler(error.message, 500));
+  }
+});
 //get admin profile
 export const getAdminProfile = asyncErrrorHandler(async (req, res, next) => {
   try {

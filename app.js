@@ -57,7 +57,7 @@ import review from "./routes/reviewRoute.js";
 
 
 app.use("/api/v1/user", user);
-app.use("/api/v1/admin", admin);
+app.use("/api/v1/admin", admin);  
 app.use("/api/v1/seller", seller);
 app.use("/api/v1/product", product);
 app.use("/api/v1/order", order);
